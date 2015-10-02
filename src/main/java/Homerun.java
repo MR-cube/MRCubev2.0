@@ -1,5 +1,7 @@
 import java.io.IOException;
-import java.util.StringTokenizer;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -19,9 +21,8 @@ public class Homerun implements Tool{
 	
   public static class MRCubeMapper
        extends Mapper<Object, Text, Text, IntWritable>{
-
-    private final static IntWritable one = new IntWritable(1);
-    private Text word = new Text();
+    
+    private static String driverName = "org.apache.hive.jdbc.Hive";
 
     @Override
 	/**
@@ -33,11 +34,21 @@ public class Homerun implements Tool{
     
     public void map(Object key, Text value, Context context
                     ) throws IOException, InterruptedException {
-      StringTokenizer itr = new StringTokenizer(value.toString());
-      while (itr.hasMoreTokens()) {
-        word.set(itr.nextToken());
-        context.write(word, one);
-      }
+      int count = 0;;
+	   try {
+		   Class.forName(driverName);
+		   Connection connection = null;
+		   System.out.println("Before getting connection :");
+		   connection= DriverManager.getConnection("jdbc:hive2://localhost:10000/default", "root", "hadoop");
+		   System.out.println("After getting connection ");
+		   ResultSet resultSet = connection.createStatement().executeQuery("select count(*) as cnt from bidid_1");;
+		   while (resultSet.next()) {
+			  count = Integer.parseInt(resultSet.getString(1));
+		   }
+	   } catch (Exception e) {
+		   e.printStackTrace();
+	   }
+	   context.write(new Text("Count"), new IntWritable(count));
     }
   }
 
@@ -64,31 +75,31 @@ public class Homerun implements Tool{
     }
   }
 
-  public static void main(String[] args) throws Exception {
-	  
-	  int result = ToolRunner.run(new Homerun(), args);
-	  System.exit(result);
-	  
-	  
-    Configuration conf = new Configuration();
-    Job job = new Job();
-    job.setJobName("MRCube");
-    job.setJarByClass(Homerun.class);
-    job.setMapperClass(MRCubeMapper.class);
-    job.setCombinerClass(MRCubeReducer.class);
-    job.setReducerClass(MRCubeReducer.class);
-    job.setOutputKeyClass(Text.class);
-    job.setOutputValueClass(IntWritable.class);
-    FileInputFormat.addInputPath(job, new Path(args[0]));
-    FileOutputFormat.setOutputPath(job, new Path(args[1]));
-    System.exit(job.waitForCompletion(true) ? 0 : 1);
-  }
+	  public static void main(String[] args) throws Exception {
+		  
+		  int result = ToolRunner.run(new Homerun(), args);
+		  System.exit(result);
+		  
+		  
+	    Configuration conf = new Configuration();
+	    Job job = new Job();
+	    job.setJobName("MRCube");
+	    job.setJarByClass(Homerun.class);
+	    job.setMapperClass(MRCubeMapper.class);
+	    job.setCombinerClass(MRCubeReducer.class);
+	    job.setReducerClass(MRCubeReducer.class);
+	    job.setOutputKeyClass(Text.class);
+	    job.setOutputValueClass(IntWritable.class);
+	    FileInputFormat.addInputPath(job, new Path(args[0]));
+	    FileOutputFormat.setOutputPath(job, new Path(args[1]));
+	    System.exit(job.waitForCompletion(true) ? 0 : 1);
+	  }
 	
 	public int run(String[] args) throws Exception {
 		// Check for valid number of arguments.
-		if (args.length != 2) {
+		if (args.length < 1) {
 			System.err.println("*** Error: Missing Parameters *** \n " +
-									   "Usage: hadoop Homerun <input_path> <output_path>");
+									   "Usage: hadoop Homerun <output_path>");
 			System.exit(-1);
 		}
 		
@@ -108,7 +119,7 @@ public class Homerun implements Tool{
 		job.setOutputValueClass(IntWritable.class);
 		 
 		// the HDFS input and output directory to be fetched from the command line
-		FileInputFormat.addInputPath(job, new Path(args[0]));
+		FileInputFormat.addInputPath(job,new Path(args[0]));
 		FileOutputFormat.setOutputPath(job, new Path(args[1]));
 		 
 	    return (job.waitForCompletion(true) ? 0 : 1); 

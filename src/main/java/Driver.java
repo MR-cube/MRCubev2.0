@@ -18,7 +18,7 @@ public class Driver {
 		   System.out.println("Before getting connection :");
 		   connection= DriverManager.getConnection("jdbc:hive2://localhost:10000/default", "root", "hadoop");
 		   System.out.println("After getting connection ");
-		   ResultSet resultSet = connection.createStatement().executeQuery("select * from bidid_1 LIMIT 10");;
+		   ResultSet resultSet = connection.createStatement().executeQuery("select count(*) as cnt from bidid_1");;
 		   while (resultSet.next()) {
 			   System.out.println(resultSet.getString(1));
 		   }
