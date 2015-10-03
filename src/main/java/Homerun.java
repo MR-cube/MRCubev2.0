@@ -22,7 +22,7 @@ public class Homerun implements Tool{
   public static class MRCubeMapper
        extends Mapper<Object, Text, Text, IntWritable>{
     
-    private static String driverName = "org.apache.hive.jdbc.Hive";
+    private static String driverName = "org.apache.hive.jdbc.HiveDriver";
 
     @Override
 	/**

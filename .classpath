@@ -33,5 +33,9 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="/usr/lib/hadoop/hadoop-common.jar"/>
+	<classpathentry kind="lib" path="/usr/lib/hive/lib/hive-metastore-1.1.0-cdh5.4.2.jar"/>
+	<classpathentry kind="lib" path="/usr/lib/hive/lib/hive-jdbc-1.1.0-cdh5.4.2.jar"/>
+	<classpathentry kind="lib" path="/usr/lib/hive/lib/hive-common-1.1.0-cdh5.4.2.jar"/>
+	<classpathentry kind="lib" path="/usr/lib/hive/lib/hive-exec-1.1.0-cdh5.4.2.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
