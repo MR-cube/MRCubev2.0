@@ -15,7 +15,7 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
-public class Homerun implements Tool{
+public class RegionCityBidPrice implements Tool{
 
 	Configuration conf = null;
 	
@@ -34,7 +34,20 @@ public class Homerun implements Tool{
     
     public void map(Object key, Text value, Context context
                     ) throws IOException, InterruptedException {
-	   context.write(new Text("Count"), new IntWritable(1));
+    
+    	String line = value.toString();
+    	String[] RegionCity = line.split(","); 	
+    	try {
+	    	if ((Integer.parseInt(RegionCity[7]) < 1000) & 
+	    			(Integer.parseInt(RegionCity[8]) < 1000) & 
+	    			(Integer.parseInt(RegionCity[20]) < 1000)) {
+	    		
+	    		context.write(new Text( RegionCity[7] + "  " + RegionCity[8]), 
+	    				new IntWritable(Integer.parseInt(RegionCity[20])));
+	    	}
+    	} catch(Exception e) {
+    		// Ignore exception
+    	}
     }
   }
 
@@ -52,25 +65,26 @@ public class Homerun implements Tool{
     public void reduce(Text key, Iterable<IntWritable> values,
                        Context context
                        ) throws IOException, InterruptedException {
-      int sum = 0;
+      int sum = 0, count = 0;
       for (IntWritable val : values) {
         sum += val.get();
+        count ++;
       }
-      result.set(sum);
+      result.set(sum/count);
       context.write(key, result);
     }
   }
 
 	  public static void main(String[] args) throws Exception {
 		  
-		  int result = ToolRunner.run(new Homerun(), args);
+		  int result = ToolRunner.run(new RegionCityBidPrice(), args);
 		  System.exit(result);
 		  
 		  
 	    Configuration conf = new Configuration();
 	    Job job = new Job();
 	    job.setJobName("MRCube");
-	    job.setJarByClass(Homerun.class);
+	    job.setJarByClass(RegionCityBidPrice.class);
 	    job.setMapperClass(MRCubeMapper.class);
 	    job.setCombinerClass(MRCubeReducer.class);
 	    job.setReducerClass(MRCubeReducer.class);
@@ -96,7 +110,7 @@ public class Homerun implements Tool{
 		 * Also set Mapper and Reducer classes.
 		 */
 		Job job = new Job(conf, "MRCube");
-		job.setJarByClass(Homerun.class);
+		job.setJarByClass(RegionCityBidPrice.class);
 		job.setMapperClass(MRCubeMapper.class);
 		job.setCombinerClass(MRCubeReducer.class);
 		job.setReducerClass(MRCubeReducer.class);
