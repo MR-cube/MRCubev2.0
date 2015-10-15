@@ -1,3 +1,7 @@
+/**
+* @Class : RegionCityCube
+* @Purpose : This class is build to create a data cube over dimension Region and city.
+*/
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
